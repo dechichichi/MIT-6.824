@@ -17,7 +17,7 @@ type Coordinator struct {
 
 // Your code here -- RPC handlers for the worker to call.
 
-func (c *Coordinator) handler(files []string) error {
+func (c *Coordinator) handler(args *ExampleArgs, reply *ExampleReply) error {
 	reply.Y = args.X + 1
 	return nil
 }
@@ -80,6 +80,7 @@ func MakeCoordinator(files []string, nReduce int) *Coordinator {
 		wg.Add(1)
 		go func(index int) {
 			defer wg.Done()
+			// 这里假设handler方法接受一个文件切片作为参数
 			c.handler(files[start:end])
 		}(i)
 	}
