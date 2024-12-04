@@ -28,7 +28,7 @@ type State int
 const (
 	MapTask TaskType = iota //itoa=0
 	ReduceTask
-	WaittingTask //任务已经发送完成，等待Reduce结果
+	WaitTask
 	ExitTask
 )
 
@@ -36,7 +36,7 @@ const (
 const (
 	MapPhase Phase = iota
 	ReducePhase
-	AllDone //此阶段已完成
+	AllDone
 )
 
 // 任务状态类型

@@ -5,7 +5,7 @@ import (
 	"strconv"
 )
 
-//rpc:一种通过网络从远程计算机程序上请求服务，而不需要了解底层网络技术的协议
+//一种通过网络从远程计算机程序上请求服务，而不需要了解底层网络技术的协议
 
 // 一个任务 应该包括：
 // 任务类型 任务ID 使用Reduce数量  任务本体
@@ -28,7 +28,7 @@ type State int
 const (
 	MapTask TaskType = iota //itoa=0
 	ReduceTask
-	WaittingTask //任务已经发送完成，等待Reduce结果
+	WaitTask
 	ExitTask
 )
 
@@ -36,7 +36,7 @@ const (
 const (
 	MapPhase Phase = iota
 	ReducePhase
-	AllDone //此阶段已完成
+	AllDone
 )
 
 // 任务状态类型

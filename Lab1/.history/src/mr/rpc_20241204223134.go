@@ -5,8 +5,6 @@ import (
 	"strconv"
 )
 
-//rpc:一种通过网络从远程计算机程序上请求服务，而不需要了解底层网络技术的协议
-
 // 一个任务 应该包括：
 // 任务类型 任务ID 使用Reduce数量  任务本体
 type Task struct {
@@ -16,10 +14,10 @@ type Task struct {
 	fileslice  []string
 }
 
-// 一个任务阶段包括
-// 分配阶段 枚举阶段
 type TaskType int
 
+// 一个任务阶段包括
+// 分配阶段 枚举阶段
 type Phase int
 
 type State int
@@ -28,23 +26,11 @@ type State int
 const (
 	MapTask TaskType = iota //itoa=0
 	ReduceTask
-	WaittingTask //任务已经发送完成，等待Reduce结果
+	WaitTask
 	ExitTask
 )
 
-// 枚举阶段类型
-const (
-	MapPhase Phase = iota
-	ReducePhase
-	AllDone //此阶段已完成
-)
-
-// 任务状态类型
-const (
-	Working State = iota
-	Waiting
-	Done
-)
+const ()
 
 func coordinatorSock() string {
 	s := "/var/tmp/5840-mr-"
