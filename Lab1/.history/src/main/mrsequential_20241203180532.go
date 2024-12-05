@@ -6,16 +6,13 @@ package main
 // go run mrsequential.go wc.so pg*.txt
 //
 
-import (
-	"fmt"
-	"io/ioutil"
-	"log"
-	"os"
-	"plugin"
-	"sort"
-
-	"6.5840/mr"
-)
+import "fmt"
+import "6.5840/mr"
+import "plugin"
+import "os"
+import "log"
+import "io/ioutil"
+import "sort"
 
 // for sorting by key.
 type ByKey []mr.KeyValue
@@ -26,7 +23,6 @@ func (a ByKey) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
 func (a ByKey) Less(i, j int) bool { return a[i].Key < a[j].Key }
 
 func main() {
-	//输入了一个文件
 	if len(os.Args) < 3 {
 		fmt.Fprintf(os.Stderr, "Usage: mrsequential xxx.so inputfiles...\n")
 		os.Exit(1)
