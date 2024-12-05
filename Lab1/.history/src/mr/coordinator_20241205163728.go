@@ -33,7 +33,7 @@ func mapf(files string, n string) []KeyValue {
 }
 
 func reducef(string, []string) string {
-	//
+
 }
 
 // start a thread that listens for RPCs from worker.go
@@ -50,12 +50,19 @@ func (c *Coordinator) server() {
 	go http.Serve(l, nil)
 }
 
+// main/mrcoordinator.go calls Done() periodically to find out
+// if the entire job has finished.
 func (c *Coordinator) Done() bool {
 	ret := false
-	//
+
+	// Your code here.
+
 	return ret
 }
 
+// create a Coordinator.
+// main/mrcoordinator.go calls this function.
+// nReduce is the number of reduce tasks to use.
 func MakeCoordinator(files []string, nReduce int) *Coordinator {
 	if nReduce <= 0 {
 		panic(fmt.Sprintf("nReduce must be positive, not %d", nReduce))
@@ -63,7 +70,7 @@ func MakeCoordinator(files []string, nReduce int) *Coordinator {
 	c := Coordinator{}
 	for i := 0; i < nReduce; i++ {
 		//对于每个文件，启动一个协程来处理
-		go c.handler(files[i], string(i))
+		go c.handler(files[i])
 		if files[i] == "" {
 			break
 		}
