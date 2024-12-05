@@ -90,13 +90,5 @@ func call(rpcname string, args interface{}, reply interface{}) bool {
 }
 
 func callDone() {
-	args := TaskArgs{}
-	reply := Task{}
-	ok := call("Coordinator.DoneTask", args, &reply)
-	if ok {
-		fmt.Println("DoneTask:", reply)
-	} else {
-		fmt.Println("DoneTask failed")
-	}
-	return
+
 }

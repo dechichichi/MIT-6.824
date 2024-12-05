@@ -18,26 +18,17 @@ type Coordinator struct {
 
 }
 
-func (c *Coordinator) handler(files string, nReduce string) error {
-	//
-	// 2. 启动worker节点，并将KeyValueList发送给worker节点
-	// 3. 等待worker节点完成任务，并汇总结果
-	// 4. 返回结果
-	return nil
-}
-func mapf(files string, n string) []KeyValue {
+func (c *Coordinator) handler(files string, nReduce int) error {
+	//这个函数用来启动worker节点的
 	var KeyValueList []KeyValue
 	// Your code here.
 	// 1. 解析文件，得到KeyValueList
 	parts := strings.Split(files, " ")
-	for i := 0; i < len(parts); i++ {
-		KeyValueList = append(KeyValueList, KeyValue{Key: parts[i], Value: n})
-	}
-	return KeyValueList
-}
-
-func reducef(string, []string) string {
-
+	n := string(nReduce)
+	// 2. 启动worker节点，并将KeyValueList发送给worker节点
+	// 3. 等待worker节点完成任务，并汇总结果
+	// 4. 返回结果
+	return nil
 }
 
 // start a thread that listens for RPCs from worker.go

@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"net/rpc"
 	"os"
-	"strings"
 )
 
 //Master节点的RPC服务端，负责分配任务给worker节点，并监控worker节点的状态，当所有worker节点完成任务后，Master节点会汇总结果并返回给客户端。
@@ -18,26 +17,8 @@ type Coordinator struct {
 
 }
 
-func (c *Coordinator) handler(files string, nReduce string) error {
-	//
-	// 2. 启动worker节点，并将KeyValueList发送给worker节点
-	// 3. 等待worker节点完成任务，并汇总结果
-	// 4. 返回结果
+func (c *Coordinator) handler(files string) error {
 	return nil
-}
-func mapf(files string, n string) []KeyValue {
-	var KeyValueList []KeyValue
-	// Your code here.
-	// 1. 解析文件，得到KeyValueList
-	parts := strings.Split(files, " ")
-	for i := 0; i < len(parts); i++ {
-		KeyValueList = append(KeyValueList, KeyValue{Key: parts[i], Value: n})
-	}
-	return KeyValueList
-}
-
-func reducef(string, []string) string {
-
 }
 
 // start a thread that listens for RPCs from worker.go
@@ -73,12 +54,12 @@ func MakeCoordinator(files []string, nReduce int) *Coordinator {
 	}
 	c := Coordinator{}
 	for i := 0; i < nReduce; i++ {
-		//对于每个文件，启动一个协程来处理
 		go c.handler(files[i])
 		if files[i] == "" {
 			break
 		}
 	}
+
 	c.server()
 	return &c
 }

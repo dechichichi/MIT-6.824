@@ -19,7 +19,7 @@ type Coordinator struct {
 }
 
 func (c *Coordinator) handler(files string, nReduce string) error {
-	//
+	Worker(mapf(files, nReduce), reducef)
 	// 2. 启动worker节点，并将KeyValueList发送给worker节点
 	// 3. 等待worker节点完成任务，并汇总结果
 	// 4. 返回结果

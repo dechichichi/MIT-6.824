@@ -5,7 +5,6 @@ import (
 	"hash/fnv"
 	"log"
 	"net/rpc"
-	"time"
 )
 
 // Map functions return a slice of KeyValue.
@@ -22,43 +21,44 @@ func ihash(key string) int {
 	return int(h.Sum32() & 0x7fffffff)
 }
 
-func DoMapTask(mapf func(string, string) []KeyValue, response *Task) {
-
-}
-
-func DoReduceTask(reducef func(string, []string) string, response *Task) {
-
-}
-
+// main/mrworker.go calls this function.
 func Worker(mapf func(string, string) []KeyValue,
 	reducef func(string, []string) string) {
-	keepFlag := true
-	for keepFlag {
+keepFlag:=true
+	for keepFlag{
 		task := GetTask()
-		switch task.TaskType {
-		case MapTask:
-			{
-				DoMapTask(mapf, &task)
-				callDone()
+		if task.Type == "map" {
+			fmt.Println("worker: map task", task.Id)
+			results := mapf(task.Data, task.Id)
+			for _, kv := range results {
+				reduceId := ihash(kv.Key) % NReduce
+				fmt.Println("worker: emit", kv, "to reduce", reduceId)
+				emit(kv, reduceId)
 			}
-		case ReduceTask:
-			{
-				DoReduceTask(reducef, &task)
-				callDone()
+			fmt.Println("worker: done with map task", task.Id)
+		} else if task.Type == "reduce" {
+			fmt.Println("worker: reduce task", task.Id)
+			values := make([]string, NMap)
+			for i := 0; i < NMap; i++ {
+				key := fmt.Sprintf("%d_%d", task.Id, i)
+				fmt.Println("worker: fetch", key)
+				value := fetch(key)
+				values[i] = value
 			}
-		case WaittingTask:
-			{
-				fmt.Println("Waitting.......")
-				time.Sleep(1 * time.Second)
-			}
-		case ExitTask:
-			{
-				fmt.Println("Exit.......")
-				keepFlag = false
-			}
+			result := reducef(task.Data, values)
+			fmt.Println("worker: emit", result, "to coordinator")
+			emitReduce(task.Id, result)
+			fmt.Println("worker: done with reduce task", task.Id)
+		} else if task.Type == "stop":
+			fmt.Println("worker: stop task")
+			keepFlag=false
+		} else {
+			fmt.Println("worker: unknown task type", task.Type)
 		}
 	}
+
 }
+
 func GetTask() Task {
 	args := TaskArgs{}
 	reply := Task{}
@@ -87,16 +87,4 @@ func call(rpcname string, args interface{}, reply interface{}) bool {
 
 	fmt.Println(err)
 	return false
-}
-
-func callDone() {
-	args := TaskArgs{}
-	reply := Task{}
-	ok := call("Coordinator.DoneTask", args, &reply)
-	if ok {
-		fmt.Println("DoneTask:", reply)
-	} else {
-		fmt.Println("DoneTask failed")
-	}
-	return
 }

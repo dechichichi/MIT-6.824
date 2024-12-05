@@ -18,8 +18,8 @@ type Coordinator struct {
 
 }
 
-func (c *Coordinator) handler(files string, nReduce string) error {
-	//
+func (c *Coordinator) handler(files string, nReduce int) error {
+	Worker(KeyValueList)
 	// 2. 启动worker节点，并将KeyValueList发送给worker节点
 	// 3. 等待worker节点完成任务，并汇总结果
 	// 4. 返回结果
@@ -33,7 +33,6 @@ func mapf(files string, n string) []KeyValue {
 	for i := 0; i < len(parts); i++ {
 		KeyValueList = append(KeyValueList, KeyValue{Key: parts[i], Value: n})
 	}
-	return KeyValueList
 }
 
 func reducef(string, []string) string {

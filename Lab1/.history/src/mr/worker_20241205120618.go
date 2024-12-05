@@ -5,7 +5,6 @@ import (
 	"hash/fnv"
 	"log"
 	"net/rpc"
-	"time"
 )
 
 // Map functions return a slice of KeyValue.
@@ -22,43 +21,27 @@ func ihash(key string) int {
 	return int(h.Sum32() & 0x7fffffff)
 }
 
-func DoMapTask(mapf func(string, string) []KeyValue, response *Task) {
-
-}
-
-func DoReduceTask(reducef func(string, []string) string, response *Task) {
-
-}
-
+// main/mrworker.go calls this function.
 func Worker(mapf func(string, string) []KeyValue,
 	reducef func(string, []string) string) {
 	keepFlag := true
 	for keepFlag {
 		task := GetTask()
 		switch task.TaskType {
-		case MapTask:
-			{
-				DoMapTask(mapf, &task)
-				callDone()
-			}
-		case ReduceTask:
-			{
-				DoReduceTask(reducef, &task)
-				callDone()
-			}
-		case WaittingTask:
-			{
-				fmt.Println("Waitting.......")
-				time.Sleep(1 * time.Second)
-			}
-		case ExitTask:
-			{
-				fmt.Println("Exit.......")
-				keepFlag = false
-			}
+		case MapTask{
+
+		}
+		case ReduceTask{
+		}
+		case WaittingTask{
+
+		}
+		case ExitTask{
+			
 		}
 	}
 }
+
 func GetTask() Task {
 	args := TaskArgs{}
 	reply := Task{}
@@ -87,16 +70,4 @@ func call(rpcname string, args interface{}, reply interface{}) bool {
 
 	fmt.Println(err)
 	return false
-}
-
-func callDone() {
-	args := TaskArgs{}
-	reply := Task{}
-	ok := call("Coordinator.DoneTask", args, &reply)
-	if ok {
-		fmt.Println("DoneTask:", reply)
-	} else {
-		fmt.Println("DoneTask failed")
-	}
-	return
 }
