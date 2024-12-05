@@ -1,7 +1,6 @@
 package mr
 
 import (
-	"encoding/json"
 	"fmt"
 	"hash/fnv"
 	"io/ioutil"
@@ -44,13 +43,7 @@ func DoMapTask(mapf func(string, string) []KeyValue, response *Task) {
 		HashKVMap[hash] = append(HashKVMap[hash], kv)
 	}
 	for i := 0; i < rn; i++ {
-		oname := "mr-tmp-" + strconv.Itoa(response.TaskID) + "-" + strconv.Itoa(i)
-		ofile, _ := os.Create(oname)
-		enc := json.NewEncoder(ofile)
-		for _, kv := range HashKVMap[i] {
-			enc.Encode(kv)
-		}
-		ofile.Close()
+		oname := "mr-tmp-" + strconv.Itoa(response.TaskId) + "-" + strconv.Itoa(i)
 	}
 }
 func Worker(mapf func(string, string) []KeyValue,

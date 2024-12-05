@@ -1,14 +1,12 @@
 package mr
 
 import (
-	"encoding/json"
 	"fmt"
 	"hash/fnv"
 	"io/ioutil"
 	"log"
 	"net/rpc"
 	"os"
-	"strconv"
 	"time"
 )
 
@@ -34,25 +32,8 @@ func DoMapTask(mapf func(string, string) []KeyValue, response *Task) {
 		return
 	}
 	content, err := ioutil.ReadAll(file)
-	//得到一个kv结构体数组
-	KeyValueList := mapf(filename, string(content))
-
-	rn := response.ReducerNum
-	HashKVMap := make(map[int][]KeyValue, rn)
-	for _, kv := range KeyValueList {
-		hash := ihash(kv.Key) % rn
-		HashKVMap[hash] = append(HashKVMap[hash], kv)
-	}
-	for i := 0; i < rn; i++ {
-		oname := "mr-tmp-" + strconv.Itoa(response.TaskID) + "-" + strconv.Itoa(i)
-		ofile, _ := os.Create(oname)
-		enc := json.NewEncoder(ofile)
-		for _, kv := range HashKVMap[i] {
-			enc.Encode(kv)
-		}
-		ofile.Close()
-	}
 }
+
 func Worker(mapf func(string, string) []KeyValue,
 	reducef func(string, []string) string) {
 	keepFlag := true

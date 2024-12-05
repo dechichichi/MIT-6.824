@@ -47,7 +47,7 @@ func DoMapTask(mapf func(string, string) []KeyValue, response *Task) {
 		oname := "mr-tmp-" + strconv.Itoa(response.TaskID) + "-" + strconv.Itoa(i)
 		ofile, _ := os.Create(oname)
 		enc := json.NewEncoder(ofile)
-		for _, kv := range HashKVMap[i] {
+		for _, kv := range HashedKV[i] {
 			enc.Encode(kv)
 		}
 		ofile.Close()

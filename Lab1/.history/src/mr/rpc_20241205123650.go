@@ -13,7 +13,7 @@ type Task struct {
 	TaskType   TaskType
 	TaskID     int
 	ReducerNum int
-	Filename   string
+	filename   string
 }
 
 type TaskArgs struct{}
