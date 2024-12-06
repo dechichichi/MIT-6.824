@@ -91,16 +91,21 @@ func main() {
 
 // load the application Map and Reduce functions
 // from a plugin file, e.g. ../mrapps/wc.so
+
+// plugin是插件的意思
 func loadPlugin(filename string) (func(string, string) []sr.KeyValue, func(string, []string) string) {
 	p, err := plugin.Open(filename)
 	if err != nil {
 		log.Fatalf("cannot load plugin %v", filename)
 	}
+	//p打开了一个插件
 	//下面这里在wc.so中查找Map和Reduce函数
+	//lookup是找到这个函数的二进制文件
 	xmapf, err := p.Lookup("Map")
 	if err != nil {
 		log.Fatalf("cannot find Map in %v", filename)
 	}
+	//这样才真正拿到这个函数
 	mapf := xmapf.(func(string, string) []sr.KeyValue)
 	xreducef, err := p.Lookup("Reduce")
 	if err != nil {

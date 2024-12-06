@@ -7,7 +7,6 @@ package main
 //
 
 import (
-	"main/sr"
 	"strconv"
 	"strings"
 	"unicode"
