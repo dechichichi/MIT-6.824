@@ -8,18 +8,9 @@ import (
 	"log"
 	"net/rpc"
 	"os"
-	"sort"
 	"strconv"
 	"time"
 )
-
-// for sorting by key.
-type ByKey []KeyValue
-
-// for sorting by key.
-func (a ByKey) Len() int           { return len(a) }
-func (a ByKey) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
-func (a ByKey) Less(i, j int) bool { return a[i].Key < a[j].Key }
 
 // Map functions return a slice of KeyValue.
 type KeyValue struct {
@@ -62,33 +53,6 @@ func DoMapTask(mapf func(string, string) []KeyValue, response *Task) {
 		ofile.Close()
 	}
 }
-
-func DoReduceTask(reducef func(string, []string) string, response *Task) {
-	rn := response.ReducerNum
-	for k := 0; k < rn; k++ {
-		sort.Sort(ByKey(response.intermediate))
-		oname := "mr-out-" + string(k)
-		ofile, _ := os.Create(oname)
-		i := 0
-		for i < len(response.intermediate) {
-			j := i + 1
-			for j < len(response.intermediate) && response.intermediate[j].Key == response.intermediate[i].Key {
-				j++
-			}
-			values := []string{}
-			for k := i; k < j; k++ {
-				values = append(values, response.intermediate[k].Value)
-			}
-			output := reducef(response.intermediate[i].Key, values)
-
-			// this is the correct format for each line of Reduce output.
-			fmt.Fprintf(ofile, "%v %v\n", response.intermediate[i].Key, output)
-			i = j
-		}
-	}
-
-}
-
 func Worker(mapf func(string, string) []KeyValue,
 	reducef func(string, []string) string) bool {
 	keepFlag := true
@@ -110,14 +74,8 @@ func Worker(mapf func(string, string) []KeyValue,
 				fmt.Println("Exit.......")
 				keepFlag = false
 			}
-		case ReduceTask:
-			{
-				DoReduceTask(reducef, &task)
-				callDone()
-			}
 		}
 	}
-
 	return true
 }
 

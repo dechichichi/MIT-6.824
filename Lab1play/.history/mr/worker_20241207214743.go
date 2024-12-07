@@ -67,7 +67,7 @@ func DoReduceTask(reducef func(string, []string) string, response *Task) {
 	rn := response.ReducerNum
 	for k := 0; k < rn; k++ {
 		sort.Sort(ByKey(response.intermediate))
-		oname := "mr-out-" + string(k)
+		oname := "mr-out-" + string(i)
 		ofile, _ := os.Create(oname)
 		i := 0
 		for i < len(response.intermediate) {
@@ -83,6 +83,7 @@ func DoReduceTask(reducef func(string, []string) string, response *Task) {
 
 			// this is the correct format for each line of Reduce output.
 			fmt.Fprintf(ofile, "%v %v\n", response.intermediate[i].Key, output)
+
 			i = j
 		}
 	}

@@ -10,10 +10,11 @@ import (
 // 一个任务 应该包括：
 // 任务类型 任务ID 使用Reduce数量  任务本体
 type Task struct {
-	TaskType   TaskType
-	TaskID     int
-	ReducerNum int
-	Filename   string
+	TaskType     TaskType
+	TaskID       int
+	ReducerNum   int
+	Filename     string
+	intermediate []KeyValue
 }
 
 type TaskArgs struct{}

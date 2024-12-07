@@ -24,10 +24,11 @@ import (
 
 type Coordinator struct {
 	// Your definitions here.
-	ReduceNum int
-	Task      Task
-	DistPhase Phase
-	Mutex     sync.Mutex // 锁
+	ReduceNum    int
+	Task         Task
+	DistPhase    Phase
+	Mutex        sync.Mutex // 锁
+	intermediate []KeyValue
 }
 
 func (c *Coordinator) handler(files string, nReduce int) error {
