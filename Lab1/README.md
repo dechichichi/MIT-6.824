@@ -1,4 +1,4 @@
-# MapReduce应用
+# Lab1:MapReduce应用
 
 ## **编程模型**
 
