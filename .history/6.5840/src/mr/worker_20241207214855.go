@@ -121,6 +121,7 @@ func Worker(mapf func(string, string) []KeyValue,
 	return true
 }
 
+// Done
 func GetTask() Task {
 	args := TaskArgs{}
 	reply := Task{}
@@ -130,7 +131,6 @@ func GetTask() Task {
 	} else {
 		fmt.Println("GetTask failed")
 	}
-	reply.TaskType = MapTask
 	return reply
 }
 

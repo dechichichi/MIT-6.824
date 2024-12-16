@@ -51,12 +51,9 @@ func MakeCoordinator(files []string, nReduce int) *Coordinator {
 	if nReduce <= 0 {
 		panic(fmt.Sprintf("nReduce must be positive, not %d", nReduce))
 	}
-	c := Coordinator{}
-	for i := 0; i < nReduce && i < len(files); i++ { // 确保不会超出files的长度
-		// 对于每个文件，启动一个协程来处理
-		go c.Handler(files[i], i)
-	}
-	go c.Server() // 启动 RPC 服务器
+	c := Coordinator{ReduceNum: nReduce}
+	go c.Handler(files, nReduce)
+	c.Server() // 启动 RPC 服务器
 	return &c
 }
 

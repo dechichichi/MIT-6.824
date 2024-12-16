@@ -130,7 +130,6 @@ func GetTask() Task {
 	} else {
 		fmt.Println("GetTask failed")
 	}
-	reply.TaskType = MapTask
 	return reply
 }
 

@@ -47,17 +47,37 @@ func (c *Coordinator) Handler(files string, nReduce int) error {
 	return nil
 }
 
+func (c *Coordinator) Server() {
+	rpc.Register(c)
+	rpc.HandleHTTP()
+	sockname := coordinatorSock()
+	os.Remove(sockname) // 删除旧的套接字文件
+	l, e := net.Listen("unix", sockname)
+	if e != nil {
+		log.Fatal("listen error:", e)
+	}
+	go http.Serve(l, nil)
+}
+
 func MakeCoordinator(files []string, nReduce int) *Coordinator {
 	if nReduce <= 0 {
 		panic(fmt.Sprintf("nReduce must be positive, not %d", nReduce))
 	}
-	c := Coordinator{}
-	for i := 0; i < nReduce && i < len(files); i++ { // 确保不会超出files的长度
-		// 对于每个文件，启动一个协程来处理
-		go c.Handler(files[i], i)
-	}
-	go c.Server() // 启动 RPC 服务器
+	c := Coordinator{ReduceNum: nReduce}
+	c.Server() // 启动 RPC 服务器
 	return &c
+}
+
+// Done
+func (c *Coordinator) Done() bool {
+	c.Mutex.Lock()
+	defer c.Mutex.Unlock()
+	if c.DistPhase == AllDone {
+		fmt.Printf("All workers done\n")
+		return true // 应该返回true，表示所有工作都已完成
+	} else {
+		return false
+	}
 }
 
 func mapf(filename string, contents string) []KeyValue {
@@ -83,8 +103,9 @@ func reducef(key string, values []string) string {
 func (c *Coordinator) Server() {
 	rpc.Register(c)
 	rpc.HandleHTTP()
+	//l, e := net.Listen("tcp", ":1234")
 	sockname := coordinatorSock()
-	os.Remove(sockname) // 删除旧的套接字文件
+	os.Remove(sockname)
 	l, e := net.Listen("unix", sockname)
 	if e != nil {
 		log.Fatal("listen error:", e)
@@ -104,13 +125,8 @@ func (c *Coordinator) GetTask(args *TaskArgs, reply *Task) error {
 }
 
 // RPC 方法，用于标记任务完成
-func (c *Coordinator) Done() bool {
-	c.Mutex.Lock()
-	defer c.Mutex.Unlock()
-	if c.DistPhase == AllDone {
-		fmt.Printf("All workers done\n")
-		return true // 应该返回true，表示所有工作都已完成
-	} else {
-		return false
-	}
+func (c *Coordinator) DoneTask(args *TaskArgs, reply *Task) error {
+	// 这里应该是更新任务状态的逻辑
+	// 例如，标记任务为完成
+	return nil
 }

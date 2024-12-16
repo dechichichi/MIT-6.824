@@ -131,6 +131,7 @@ func GetTask() Task {
 		fmt.Println("GetTask failed")
 	}
 	reply.TaskType = MapTask
+	reply.Phase = MapPhase
 	return reply
 }
 

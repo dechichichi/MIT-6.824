@@ -56,8 +56,20 @@ func MakeCoordinator(files []string, nReduce int) *Coordinator {
 		// 对于每个文件，启动一个协程来处理
 		go c.Handler(files[i], i)
 	}
-	go c.Server() // 启动 RPC 服务器
+	c.server()
 	return &c
+}
+
+// Done
+func (c *Coordinator) Done() bool {
+	c.Mutex.Lock()
+	defer c.Mutex.Unlock()
+	if c.DistPhase == AllDone {
+		fmt.Printf("All workers done\n")
+		return true // 应该返回true，表示所有工作都已完成
+	} else {
+		return false
+	}
 }
 
 func mapf(filename string, contents string) []KeyValue {
@@ -83,34 +95,12 @@ func reducef(key string, values []string) string {
 func (c *Coordinator) Server() {
 	rpc.Register(c)
 	rpc.HandleHTTP()
+	//l, e := net.Listen("tcp", ":1234")
 	sockname := coordinatorSock()
-	os.Remove(sockname) // 删除旧的套接字文件
+	os.Remove(sockname)
 	l, e := net.Listen("unix", sockname)
 	if e != nil {
 		log.Fatal("listen error:", e)
 	}
 	go http.Serve(l, nil)
-}
-
-// RPC 方法，用于获取任务
-func (c *Coordinator) GetTask(args *TaskArgs, reply *Task) error {
-	// 这里应该是分配任务的逻辑
-	// 例如，初始化 reply 结构体并返回
-	reply.TaskType = MapTask
-	reply.TaskID = 1
-	reply.ReducerNum = c.ReduceNum
-	reply.Filename = "example.txt"
-	return nil
-}
-
-// RPC 方法，用于标记任务完成
-func (c *Coordinator) Done() bool {
-	c.Mutex.Lock()
-	defer c.Mutex.Unlock()
-	if c.DistPhase == AllDone {
-		fmt.Printf("All workers done\n")
-		return true // 应该返回true，表示所有工作都已完成
-	} else {
-		return false
-	}
 }
