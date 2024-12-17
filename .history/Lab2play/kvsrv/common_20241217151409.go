@@ -27,8 +27,7 @@ type PutAppendReply struct {
 }
 
 type GetArgs struct {
-	Key     string
-	OutTime bool
+	Key string
 	// You'll have to add definitions here.
 }
 

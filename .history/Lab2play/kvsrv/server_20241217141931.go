@@ -1,7 +1,6 @@
 package kvsrv
 
 import (
-	"fmt"
 	"log"
 	"sync"
 )
@@ -28,48 +27,26 @@ func DPrintf(format string, a ...interface{}) (n int, err error) {
 }
 
 type KVServer struct {
-	mu    sync.Mutex
-	value map[string]string
+	mu sync.Mutex
+
 	// Your definitions here.
 }
 
-// Get（key） 获取当前值 对于密钥。不存在的键的 Get 应返回 空字符串。
 func (kv *KVServer) Get(args *GetArgs, reply *GetReply) {
-	kv.mu.Lock()
-	defer kv.mu.Unlock()
 	// Your code here.
-	if kv.value[args.Key] != "" {
-		reply.Value = kv.value[args.Key]
-	} else {
-		reply.Value = ""
-	}
 }
 
-// Put（key， value） 安装或替换 中特定键的值 映射中
 func (kv *KVServer) Put(args *PutAppendArgs, reply *PutAppendReply) {
-	kv.mu.Lock()
-	defer kv.mu.Unlock()
-	if kv.value[args.Key] != "" {
-		kv.value[args.Key] = args.Value
-		fmt.Println("替换")
-	} else {
-		kv.value[args.Key] = args.Value
-		fmt.Println("安装")
-	}
 	// Your code here.
 }
 
-// Append（key， arg） 将 arg 附加到 key 的值并返回旧值
 func (kv *KVServer) Append(args *PutAppendArgs, reply *PutAppendReply) {
 	// Your code here.
-	kv.mu.Lock()
-	defer kv.mu.Unlock()
-	reply.Value = kv.value[args.Key]
-	kv.value[args.Key] = args.Value
 }
 
 func StartKVServer() *KVServer {
 	kv := new(KVServer)
+
 	// You may need initialization code here.
 
 	return kv

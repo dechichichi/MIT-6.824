@@ -35,8 +35,6 @@ type KVServer struct {
 
 // Get（key） 获取当前值 对于密钥。不存在的键的 Get 应返回 空字符串。
 func (kv *KVServer) Get(args *GetArgs, reply *GetReply) {
-	kv.mu.Lock()
-	defer kv.mu.Unlock()
 	// Your code here.
 	if kv.value[args.Key] != "" {
 		reply.Value = kv.value[args.Key]
@@ -62,14 +60,13 @@ func (kv *KVServer) Put(args *PutAppendArgs, reply *PutAppendReply) {
 // Append（key， arg） 将 arg 附加到 key 的值并返回旧值
 func (kv *KVServer) Append(args *PutAppendArgs, reply *PutAppendReply) {
 	// Your code here.
-	kv.mu.Lock()
-	defer kv.mu.Unlock()
 	reply.Value = kv.value[args.Key]
 	kv.value[args.Key] = args.Value
 }
 
 func StartKVServer() *KVServer {
 	kv := new(KVServer)
+
 	// You may need initialization code here.
 
 	return kv
