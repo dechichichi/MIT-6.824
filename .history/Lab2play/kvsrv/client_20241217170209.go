@@ -3,7 +3,6 @@ package kvsrv
 import (
 	"crypto/rand"
 	"math/big"
-	"time"
 
 	"kv/labrpc"
 )
@@ -12,11 +11,6 @@ type Clerk struct {
 	server *labrpc.ClientEnd
 	seq    int64
 	// You will have to modify this struct.
-}
-
-func (ck *Clerk) nextSeq() int64 {
-	ck.seq++
-	return ck.seq
 }
 
 //现在，您应该修改您的解决方案，以便在遇到 dropped 时继续 消息（例如 RPC 请求和 RPC 回复）。
@@ -55,47 +49,12 @@ func MakeClerk(server *labrpc.ClientEnd) *Clerk {
 // the types of args and reply (including whether they are pointers)
 // must match the declared types of the RPC handler function's
 // arguments. and reply must be passed as a pointer.
-// 获取一个键的当前值。
-// 如果键不存在，则返回""。
-// 面对所有其他错误时，会不断尝试。
-//
-// 您可以使用如下代码发送RPC调用：
-// ok := ck.server.Call("KVServer.Get", &args, &reply)
-//
-// args和reply的类型（包括它们是否是指针）必须与RPC处理函数的
-// 参数的声明类型匹配。并且reply必须作为指针传递。
 func (ck *Clerk) Get(key string) string {
-	// 创建一个channel来接收结果
-	replyChan := make(chan string)
-	args := GetArgs{
-		Key: key,
-		Seq: ck.nextSeq(), // 生成序列号
+	go {yes:=ck.server.Call(key, "Get", nil)}
+	for !yes{
+
 	}
-	var reply GetReply // 必须提供一个有效的回复结构体
-
-	// 启动goroutine来执行Call方法
-	go func() {
-		// 调用Call方法并获取结果
-		ok := ck.server.Call("KVServer.Get", &args, &reply)
-
-		if ok {
-			// 如果调用成功，发送回复的内容到channel
-			replyChan <- reply.Value
-		}
-	}()
-
-	// 设置超时
-	timeout := time.After(5 * time.Second)
-
-	// 等待结果或超时
-	select {
-	case reply := <-replyChan:
-		// 如果从channel接收到结果，返回结果
-		return reply
-	case <-timeout:
-		// 如果超时，返回空字符串
-		return ""
-	}
+	return ""
 }
 
 // shared by Put and Append.
@@ -107,34 +66,8 @@ func (ck *Clerk) Get(key string) string {
 // must match the declared types of the RPC handler function's
 // arguments. and reply must be passed as a pointer.
 func (ck *Clerk) PutAppend(key string, value string, op string) string {
-	args := PutAppendArgs{
-		Key:   key,
-		Value: value,
-		Seq:   ck.nextSeq(), // 生成序列号
-	}
-	replyChan := make(chan string)
-	var reply GetReply // 必须提供一个有效的回复结构体
-	go func() {
-
-		// 发送RPC调用
-		ok := ck.server.Call("KVServer."+op, &args, &reply)
-
-		if ok {
-			replyChan <- "true"
-		}
-	}()
-	// 设置超时
-	timeout := time.After(5 * time.Second)
-
-	// 等待结果或超时
-	select {
-	case reply := <-replyChan:
-		// 如果从channel接收到结果，返回结果
-		return reply
-	case <-timeout:
-		// 如果超时，返回空字符串
-		return ""
-	}
+	// You will have to modify this function.
+	return ""
 }
 
 func (ck *Clerk) Put(key string, value string) {

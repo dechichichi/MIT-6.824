@@ -5,8 +5,10 @@ type PutAppendArgs struct {
 	Key   string
 	Value string
 	//拒绝重复请求
-	Seq int64
+	Flag bool
 	// You'll have to add definitions here.
+	// Field names must start with capital letters,
+	// otherwise RPC will break.
 }
 
 //带有已删除消息的键/值服务器（简单)
@@ -20,10 +22,6 @@ type PutAppendArgs struct {
 //您必须仔细考虑服务器必须处于什么状态 maintain 用于处理重复的 Get（）、Put（）、 和 Append（） 请求（如果有）。
 //您的重复检测方案应快速释放服务器内存， 例如，通过让每个 RPC 暗示客户端已经看到了 回复。可以假设客户端将 一次只能打电话给 Clerk。
 
-//1 多次发送 RPC直到收到回复或者超时
-//2 确保每个操作只执行一次
-//3 处理重复的请求
-//4 快速释放服务器内存
 type PutAppendReply struct {
 	Value string
 }
@@ -36,4 +34,5 @@ type GetArgs struct {
 
 type GetReply struct {
 	Value string
+	Seq   int64
 }
