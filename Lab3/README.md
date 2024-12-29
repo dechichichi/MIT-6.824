@@ -259,3 +259,11 @@ Test (3D): crash and restart all servers ...
 PASS
 ok      6.5840/raft      293.456s
 ```
+
+![b81a1be34df0a1f09c503450f4523600](C:\Users\Lyan\Documents\Tencent Files\2425863684\nt_qq\nt_data\Pic\2024-12\Ori\b81a1be34df0a1f09c503450f4523600.webp)
+
+![1dc0fe9c7aa5ae078f108ecab0c3295e](C:\Users\Lyan\Documents\Tencent Files\2425863684\nt_qq\nt_data\Pic\2024-12\Ori\1dc0fe9c7aa5ae078f108ecab0c3295e.webp)
+
+![图4](https://upload-images.jianshu.io/upload_images/1752522-b308efb041bee9dc.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
+
+![图5](https://upload-images.jianshu.io/upload_images/1752522-a405ff884cfcac10.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)

@@ -51,26 +51,54 @@ type ApplyMsg struct {
 
 // A Go object implementing a single Raft peer.
 type Raft struct {
-	mu        sync.Mutex          // Lock to protect shared access to this peer's state
-	peers     []*labrpc.ClientEnd // RPC end points of all peers
-	persister *Persister          // Object to hold this peer's persisted state
-	me        int                 // this peer's index into peers[]
-	dead      int32               // set by Kill()
-
+	mu          sync.Mutex          // Lock to protect shared access to this peer's state
+	peers       []*labrpc.ClientEnd // RPC end points of all peers
+	persister   *Persister          // Object to hold this peer's persisted state
+	me          int                 // this peer's index into peers[]
+	dead        int32               // set by Kill()
+	state       States              // 当前状态
+	currentTerm int
+	votedFor    int
+	log         []LogEntry
+	commitIndex int
+	lastApplied int
+	//以下是leader专有
+	nextIndex  []int
+	matchIndex []int
 	// Your data here (3A, 3B, 3C).
 	// Look at the paper's Figure 2 for a description of what
 	// state a Raft server must maintain.
 
 }
 
+type States int
+
+const (
+	Follower = 0
+	Candidate
+	Leader
+)
+
+// A single log entry in the Raft log.
+type LogEntry struct {
+	term    int //任期
+	index   int //索引 `default:"1"`
+	command interface{}
+}
+
 // return currentTerm and whether this server
 // believes it is the leader.
 func (rf *Raft) GetState() (int, bool) {
+	rf.mu.Lock()
+	defer rf.mu.Unlock()
 
-	var term int
-	var isleader bool
-	// Your code here (3A).
-	return term, isleader
+	// 获取当前任期号
+	term := rf.currentTerm
+
+	// 检查当前节点是否是领导者
+	isLeader := rf.state == Leader
+
+	return term, isLeader
 }
 
 // save Raft's persistent state to stable storage,
@@ -123,6 +151,10 @@ func (rf *Raft) Snapshot(index int, snapshot []byte) {
 // example RequestVote RPC arguments structure.
 // field names must start with capital letters!
 type RequestVoteArgs struct {
+	term         int
+	candidateld  int //候选人ID
+	lastlogindex int //候选人最后一次日志索引
+	lastlogterm  int //候选人最后一次日志任期
 	// Your data here (3A, 3B).
 }
 
@@ -130,11 +162,77 @@ type RequestVoteArgs struct {
 // field names must start with capital letters!
 type RequestVoteReply struct {
 	// Your data here (3A).
+	term        int
+	voteGranted bool //是否投票给候选人
 }
 
 // example RequestVote RPC handler.
 func (rf *Raft) RequestVote(args *RequestVoteArgs, reply *RequestVoteReply) {
 	// Your code here (3A, 3B).
+	reply.term = rf.currentTerm
+	if args.term <= rf.currentTerm {
+		reply.voteGranted = false
+		//
+		return
+	} else {
+		reply.voteGranted = true
+		return
+	}
+}
+
+type AppendEntriesArgs struct {
+	Term         int
+	LeaderId     int
+	PrevLogIndex int
+	PrevLogTerm  int
+	Entries      []LogEntry // 可能为空，表示心跳
+	LeaderCommit int
+}
+
+const (
+	minElectionTimeout = 150 * time.Millisecond // 最小选举超时
+	maxElectionTimeout = 300 * time.Millisecond // 最大选举超时
+)
+
+func generateElectionTimeout() time.Duration {
+	return minElectionTimeout + time.Duration(rand.Intn(int((maxElectionTimeout-minElectionTimeout)/time.Millisecond)))*time.Millisecond
+}
+
+type AppendEntriesReply struct {
+	Term    int
+	Success bool
+}
+
+func (rf *Raft) AppendEntries(args *AppendEntriesArgs, reply *AppendEntriesReply) {
+	// 更新Term和转换为Follower的逻辑
+	if args.Term > rf.currentTerm {
+		rf.currentTerm = args.Term
+		rf.votedFor = -1
+		// 其他转换为Follower的逻辑
+	}
+
+	// 检查PrevLogIndex和PrevLogTerm是否匹配
+	if args.PrevLogIndex >= len(rf.log) || rf.log[args.PrevLogIndex].Term != args.PrevLogTerm {
+		reply.Success = false
+		return
+	}
+
+	// 如果Entries为空，表示这是一个心跳信号
+	if len(args.Entries) == 0 {
+		// 更新commitIndex
+		if args.LeaderCommit > rf.commitIndex {
+			rf.commitIndex = min(args.LeaderCommit, len(rf.log)-1)
+		}
+		reply.Success = true
+		return
+	}
+
+	// 处理日志条目
+	// ... 实现日志复制逻辑
+	// 更新nextIndex和matchIndex
+	// ...
+
+	reply.Success = true
 }
 
 // example code to send a RequestVote RPC to a server.
@@ -211,14 +309,38 @@ func (rf *Raft) killed() bool {
 }
 
 func (rf *Raft) ticker() {
+	var t int64
+	t = 0
 	for rf.killed() == false {
-
+		if rf.commitIndex > rf.lastApplied {
+			rf.log[rf.lastApplied].term = rf.currentTerm
+			rf.lastApplied++
+			t = 0
+		}
+		if t > 30000 {
+			rf.currentTerm++
+			t = 0
+			rf.votedFor = rf.me
+			rf.state = Candidate
+			args := &RequestVoteArgs{
+				term:         rf.currentTerm,
+				candidateld:  rf.me,
+				lastlogindex: rf.lastApplied,
+				lastlogterm:  rf.currentTerm, //候选人最后一次日志任期
+			}
+			reply := &RequestVoteReply{}
+			for rf.sendRequestVote(len(rf.peers), args, reply) == false {
+				//选举超时
+				//进行新的选举
+			}
+		}
 		// Your code here (3A)
 		// Check if a leader election should be started.
 
 		// pause for a random amount of time between 50 and 350
 		// milliseconds.
 		ms := 50 + (rand.Int63() % 300)
+		t += ms
 		time.Sleep(time.Duration(ms) * time.Millisecond)
 	}
 }
@@ -238,7 +360,12 @@ func Make(peers []*labrpc.ClientEnd, me int,
 	rf.peers = peers
 	rf.persister = persister
 	rf.me = me
-
+	rf.currentTerm = 0
+	rf.votedFor = 0
+	rf.log = []LogEntry{{index: 1}}
+	rf.commitIndex = 0
+	rf.lastApplied = 0
+	rf.state = Follower
 	// Your initialization code here (3A, 3B, 3C).
 
 	// initialize from state persisted before a crash
