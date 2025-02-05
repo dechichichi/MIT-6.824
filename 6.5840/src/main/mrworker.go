@@ -16,7 +16,7 @@ import (
 	"os"
 	"plugin"
 
-	"6.5840/mr"
+	"main/mr"
 )
 
 func main() {
@@ -24,7 +24,7 @@ func main() {
 		fmt.Fprintf(os.Stderr, "Usage: mrworker xxx.so\n")
 		os.Exit(1)
 	}
-
+	//打开wc.so文件，并加载Map和Reduce函数
 	mapf, reducef := loadPlugin(os.Args[1])
 
 	mr.Worker(mapf, reducef)
@@ -37,6 +37,7 @@ func loadPlugin(filename string) (func(string, string) []mr.KeyValue, func(strin
 	if err != nil {
 		log.Fatalf("cannot load plugin %v", filename)
 	}
+	//回传Map和Reduce函数
 	xmapf, err := p.Lookup("Map")
 	if err != nil {
 		log.Fatalf("cannot find Map in %v", filename)
